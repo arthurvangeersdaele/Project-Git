@@ -2,14 +2,14 @@
 title: "Projet LSTAT2110(A) -- Analyse de données"
 author: PETIT Romain & VAN GEERSDAELE Arthur, 4827-1700 & 3004-1700, GBIO2M
 output:
-  pdf_document:
-    number_sections: yes
-    toc: yes
-    toc_depth: 3
   html_document:
     df_print: paged
     toc: yes
     toc_depth: '3'
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
 ---
 
 <!-- En haut, compliter/supprimer selon besoin. -->
@@ -23,6 +23,8 @@ knitr::opts_chunk$set(comment = "")
 library(pander)
 library(FactoMineR)
 library(corrplot)
+library(resample)
+library(factoextra)
 
 ```
 # Introduction
@@ -31,9 +33,9 @@ En 2003, Grete Heinz, Louis J. Peterson, Roger W. Johnson, et Carter J. Kerk ont
 
 Pour 507 individus (247 hommes - 260 femmes), 25 mesures/observations, dont les noms et unités sont détaillés en annexe, ont été faites.
 
-Un exemple de problématique très pertinente serait qu'un squelette (entier ou même partiel) soit retrouvé et qu'une enquête soit ouverte. Dans un tel cas de figure, hormis les informations génétiques, les premières caractéristiques intéressantes sont l' _âge_, le _poid_, la _taille_ et le _sexe_ de l'individu retrouvé. 
+Un exemple de problématique très pertinente serait qu'un cadavre en mauvais état soit retrouvé et qu'une enquête soit ouverte. Dans un tel cas de figure, hormis les informations génétiques, les premières caractéristiques intéressantes sont l' _âge_, le _poid_, la _taille_ et le _sexe_ de l'individu retrouvé.
 
-Ce rapport va analyser ces données en utlisant les méthodes vues au cours afin de voir, si oui ou non, l'idée d'utiliser certaines valeurs de variables pour en déduire d'autres est pertinent.  
+Ce rapport va analyser ces données en utlisant les méthodes vues au cours afin de voir, si oui ou non, l'idée d'utiliser certaines valeurs de variables pour en déduire d'autres est pertinente.  
 
 L'objectif de cette étude était précisément d'offrir aux étudiants des données solides et pertinentes pour les analyser.
 
@@ -46,32 +48,36 @@ data.initial <- read.csv("bdims.csv")
 data.quantitative <- subset(data.initial, select = -c(length(data.initial)))
 ```
 
+## Généralités : 
+```{r echo=FALSE}
+means = colMeans(data.initial)
+barplot(means, main="Moyennes des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
+```
+
+On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Le genre (sex) étant une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un, alors que pour les autres variables, qui sont des mesures naturelles, ca n'est pas le cas. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupe de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
+
+
+```{r echo = FALSE}
+data.cm = subset(data.initial, select = c(length(data.initial)-4:length(data.initial)))
+means = rowMeans(data.initial)
+bp <- barplot(means, main="Moyennes des mesures de diamètre/circonférence", names.arg = seq(from=1, to= 507, by=1), col=rainbow(507),  las = 2)
+```
+
+Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela ne nous apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont correlées à la variable catégoricielle du genre.
+
+```{r echo=FALSE}
+vars = colStdevs(data.initial)
+barplot(vars, main="Écart-type des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
+```
+
+On remarque que les 9 premières mesures anatomiques n'ont que très peu de dispersion autour de leur moyenne, comparé aux 5 suivantes. De nouveau, celles de l'âge, du poids, du sexe et de la taille ne sont pas encore criticable pour les même raisons déjà évoquées ci-dessus.
+
 ## Variable d'intérêt : le sexe (0 : Féminin, 1 : Masculin)
 
-Cette variable d'intérêt est discrète et fera l'objet d'une classification plus tard dans le rapport. Le nombre d'hommes et de femmes étudiés est assez équilibré et élevé (247 H - 260 F). 
+Cette variable d'intérêt est binaire et discrète. Elle servira à la classification plus tard dans le rapport. Le nombre d'hommes et de femmes étudiés est assez équilibré et élevé (247 H - 260 F). 
 
-## Variable d'intérêt : l'âge (en année)
 
-```{r echo=FALSE}
-data <- data.initial
-pander(summary(data$age))
-```
-## Variable d'intérêt : le poid (en kg)
-
-```{r echo=FALSE}
-data <- data.initial
-pander(summary(data$wgt))
-```
-
-## Variable d'intérêt : la taille (en cm)
-
-```{r echo=FALSE}
-data <- data.initial
-pander(summary(data$hgt))
-```
-## Enlever rigoureusement les individus outliers (à venir, meme si ils semble ne pas vraiment en avoir?)
-
-## Synthèse : distribution des variables d'intérêt
+## Synthèse : distribution des variables de type différents (âge, taille, poids et genre)
 
 ```{r echo=FALSE,fig.dim = c(10, 3)}
 data <- data.initial
@@ -100,41 +106,65 @@ histoplot(data$age, "Age")
 histoplot(data$wgt, "Weight")
 histoplot(data$hgt, "Height")
 ```
+On voit sur le premier graphe que la population est assez jeune (30 ans en moyenne) et que seulement 25% des individus ont plus de 36 ans, tandis que 50% des individus ont moins de 27 ans.
+
+Le second graphe présente presque les mêmes types de quantile et médiane/moyenne que pourrait le faire une Gaussienne. En effet, la moyenne et la médiane sont presque identiques, et les 1er et 2eme quantiles sont équidistants de la moyenne. On note qu'il y'a très peu de personnes au-dessus de 96 kg, dont un sortant vraiment du lot (116 kg).
+
+La distribution de la taille ressemble encore plus à une Gaussienne que celle du poids, avec une moyenne à 1m70 et un écart-type de 9.41 cm, tout genre confondu.
+
 
 ## Correlation entre les variables : corrplot
 
-```{r echo=FALSE,fig.dim = c(10, 10)}
+```{r echo=FALSE,fig.dim = c(5, 5)}
 normalize <- function(x) {
   (x - min(x)) / (max(x) - min(x))
 }
 data.normalized <- as.data.frame(lapply(data.quantitative, normalize))
-cp <- corrplot(cor(data.normalized), method = "number")
+cp <- corrplot(cor(data.normalized), method = "square")
 ```
 
+Ce plot des corrélation nous indique malheureusement déjà que nous ne pourrons pas utiliser les mesures anatomiques pour déterminer l'âge ( de manière linéaire, car on étudie la corrélation). Si on voulait s'acharner, on pourrait vérifier l'information mutuelle entre la variable âge et toute les autres, afin de détecter une potentielle relation non-linéaire. 
+
+Au vu de ce plot, les variables : bii.di, thi.gi seront peu intéressantes.
 
 # Analyse en composantes principales
 
-Pour simplifer la lecture, les variables hautement correlées sont représentées par une unique flèche. 
 
 ```{r echo=FALSE,fig.dim = c(10, 5), out.width="50%"}
+par(cex = 0.5, mfrow=c(1,2))
+res <- PCA(data.quantitative, graph = FALSE)
+```
+Si on regarde la quantité d'information respectivement apportée par chaque axe dans le tableau ci-dessous, on peut s'en servir pour choisir les composantes principales les plus pertinentes. 
 
-tmp <- cor(data.quantitative)
-tmp[upper.tri(tmp)] <- 0
-diag(tmp) <- 0
+```{r echo = FALSE}
+pander(res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]))
+```
+La « règle du coude » m’encourage à ne retenir que les 2 premiers axes qui portent environs 73% de l’information.
 
-# Above two commands can be replaced with 
-# tmp[!lower.tri(tmp)] <- 0
+La règle de Kaiser nous inciterait à retenir deux axes supplémentaires (pour un gain de 10% d’informations), mais un travail beaucoup plus conséquent.
+
+Nous allons donc retenir les deux premières uniquement. 
+
+```{r echo=FALSE,fig.dim = c(10, 5), out.width="50%"}
+par(cex = 0.5, mfrow=c(1,2))
 
 
-data.quantitative.simplified <- data.quantitative[, !apply(tmp, 2, function(x) any(abs(x) > 0.75, na.rm = TRUE))]
-par(mfrow=c(1,2))
-res <- PCA(data.quantitative.simplified, graph = TRUE)
+fviz_pca_var(res, labelsize = 3, repel = TRUE) +
+  theme(text = element_text(size = 7.5),
+        axis.title = element_text(size = 7.5),
+        axis.text = element_text(size = 7.5))
 
+fviz_pca_ind(res, labelsize = 3, repel = TRUE) +
+  theme(text = element_text(size = 7.5),
+        axis.title = element_text(size = 7.5),
+        axis.text = element_text(size = 7.5))
 #res <- PCA(data.quantitative, graph=TRUE)
 
 
 ```
-À première vue de l'ACP, la variable _âge_ est fortement décorrelée des autres en regard des autres variables, elle ne saura sans doute jamais être déduite à partir d'autres variables (visible également sur le corrplot). Le graphe des individus de l'ACP montre une population étudiée distribuée homogénéiquement autour de zero, sans outliers sévères. 
+
+
+Le cercle des corrélations montre qu'un grand nombre de variables (sauf l'âge !) sont plutôt bien représentées car elles sont très proche du cercle, leur qualité de représentation est proche de l'unité (cos2). 
 
 ## Etude de la quantité d'information apportée sur les variables (âge,) poids et taille en fonction des autres variables disponible : (=étude combinée des variances et des correlations)
 
