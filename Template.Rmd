@@ -21,6 +21,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(comment = "")
+knitr::opts_chunk$set(warning = FALSE)
 
 # libraries
 library(pander)
@@ -28,6 +29,7 @@ library(FactoMineR)
 library(corrplot)
 library(resample)
 library(factoextra)
+library(VIM)
 
 ```
 # Introduction
@@ -52,23 +54,21 @@ data.quantitative <- subset(data.initial, select = -c(length(data.initial)))
 ```
 
 ## Généralités
-```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
+```{r echo=FALSE, warning = FALSE, fig.show="hold", out.width="50%"}
 means = colMeans(data.initial)
 barplot(means, main="Moyennes des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
+
+data.cm = subset(data.initial, select = c(length(data.initial)-4:length(data.initial)))
+means = rowMeans(data.initial)
+barplot(means, main="Moyennes des mesures de diamètre/circonférence", names.arg = seq(from=1, to= 507, by=1), col="black",  las = 2)
 ```
 
 On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Le genre (_sex_) étant une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un, alors que pour les autres variables, qui sont des mesures naturelles, ca n'est pas le cas. On peut noter que la moyenne est sous 0.5, du fait qu'il y'a plus de femmes que d'hommes. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupes de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
 
 
-```{r echo = FALSE, warning = FALSE, out.width="33%", fig.align="center"}
-data.cm = subset(data.initial, select = c(length(data.initial)-4:length(data.initial)))
-means = rowMeans(data.initial)
-bp <- barplot(means, main="Moyennes des mesures de diamètre/circonférence", names.arg = seq(from=1, to= 507, by=1), col="black",  las = 2)
-```
-
 Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela ne nous apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont corrélées à la variable catégorielle du genre.
 
-```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
+```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 vars = colStdevs(data.initial)
 barplot(vars, main="Écart-type des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
 ```
@@ -82,7 +82,7 @@ Cette variable est binaire et discrète. Elle servira à la classification plus 
 
 ## Distribution des variables de nature différentes (âge, taille et poids)
 
-```{r echo=FALSE,fig.dim = c(10, 3), fig.align="center"}
+```{r echo=FALSE, warning = FALSE, fig.dim = c(10, 3), fig.align="center"}
 data <- data.initial
 
 par(mfrow=c(1,3))
@@ -148,7 +148,7 @@ res <- PCA(data.quantitative, graph = FALSE)
 ```
 Si on regarde la quantité d'information respectivement apportée par chaque axe dans le tableau ci-dessous, on peut s'en servir pour choisir les composantes principales les plus pertinentes. 
 
-```{r echo = FALSE, out.width="33%", fig.align="center"}
+```{r echo = FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 barplot(100*res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]), col = 'red', las = 2,  ylab="[%]", main = "Inertie par composante principale")
 ```
 
@@ -158,8 +158,7 @@ La règle de Kaiser nous inciterait à retenir deux axes supplémentaires (pour 
 
 Nous allons donc retenir les deux premières uniquement. 
 
-```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
-
+```{r echo=FALSE, warning = FALSE, fig.show="hold", out.width="50%"}
 
 fviz_pca_var(res, labelsize = 3, repel = TRUE) +
   theme(text = element_text(size = 7.5),
@@ -215,35 +214,36 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
 En mappant la variable catégoritielle _sex_ sur le graphe des individus, on peut voir qu'il sont distinctement séparés (hormis quelques outliers) sur les axes 1 et 2. L'information du sexe se trouve donc aussi dans d'autre variables, et le fait de n'avoir gardé que 73% de l'information en sélectionnant que les deux premières composantes ne nous a pas fait perdre cette information.
 
 # Clustering 
-Nous avons choisi d'utiliser une k-means clustering plutôt qu'une classification hiérarchique car nous souhaitons avoir deux classes en accord avec le sexe de la personne.
+
+Nous avons choisi d'utiliser une k-means clustering plutôt qu'une classification hiérarchique car nous souhaitons avoir deux classes en accord avec le sexe de la personne.	
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 
+data=as.data.frame(data.initial)	
+sex=data$sex	
+data$sex=NULL	
+data$age=NULL	
+datastd=scale(data)	
+model <- kmeans(datastd, centers = 2) #on détermine à l'avance le nombre de clusters (i.e., centers = 2)	
+model$cluster #affiche la classe déterminé par le modèle	
+number=length(which(sex == as.vector(model$cluster)-1))	
+score=(number/507)*100	
+score	
+#Algorithme de Ward	
+# hclust_ward <- hclust(dist(datastd)^2 / (2 * nrow(datastd)), method = "ward.D") # method = "euclidean" par défaut dans la fonction dist()	
+# hclust_ward$height	
+#Dendrogramme	
+#plot(hclust_ward)	
+# barplot(hclust_ward$height,	
+#         ylab = "aggregation level", names.arg = (nrow(datastd)-1):1, sub="Nombre de classes")	
+# plot(hclust_ward)
 
-data=as.data.frame(data.initial)
-sex=data$sex
-data$sex=NULL
-data$age=NULL
-datastd=scale(data)
-model <- kmeans(datastd, centers = 2) #on détermine à l'avance le nombre de clusters (i.e., centers = 2)
-model$cluster #affiche la classe déterminé par le modèle
+tmp <- cbind((as.vector(model$cluster)-1)*2-1, sex*2-1)
+matrixplot(tmp, col=c("red", "green", "red", "green"), xlab = "class", ylab = "individuals", labels = c("klusters", "sex"))
+```
 
-
-number=length(which(sex == as.vector(model$cluster)-1))
-score=(number/507)*100
-score
-
-
-#Algorithme de Ward
-hclust_ward <- hclust(dist(datastd)^2 / (2 * nrow(datastd)), method = "ward.D") # method = "euclidean" par défaut dans la fonction dist()
-hclust_ward$height
-#Dendrogramme
-#plot(hclust_ward)
-barplot(hclust_ward$height,
-        ylab = "aggregation level", names.arg = (nrow(datastd)-1):1, sub="Nombre de classes")
-plot(hclust_ward)
-
+```{r}
 bmi_values = data.initial$wgt / (data.initial$hgt/100 * data.initial$hgt/100)
 bmi_labels = c("Underweight III", "Underweight II", "Underweight I", "Normal Range", "Overweight", "Obese I", "Obese II", "Obese III")
 bmi_intervals =  c(0, 16.0, 17.0, 18.5, 25, 30, 35, 40, 10000)
@@ -277,7 +277,7 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
 
 Comme vu en TP, grâce aux relations quasi-barycentriques, nous pouvons représenter sur le même graphique à la fois les coordonnées factorielles des lignes et des colonnes et leur proximité/éloignement a donc une interprétation intrinsèque en termes de liens. Afin de faciliter cette interprétation, on représente généralement les coordonnées de l’ACFS sur le premier plan factoriel. Le graphe de la quantité d'information relative à chaque axe principal ci-dessous nous indique que c'est acceptable, même si prendre également le 3e axe est tentant.
 
-```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
+```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 res.CA <- CA(data.quantitative, graph =  FALSE)
 barplot(res.CA$eig[,3], col = 'red', las =2,  ylab="[%]", main = "Quantité d'information cumulative par axe")
 
@@ -303,7 +303,7 @@ fviz_ca_col(res.CA, repel = TRUE)
 
 ```
 
-```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
+```{r echo=FALSE, warning = FALSE, out.width="50%"}
 
 barplot(round(sort(rowSums(res.CA$col$cos2[,1:2])), digits = 3), col = 'green', las =2,  ylab="cos2",, main = "Cos2 des modalités sur le plan factoriel 1-2")
 abline(h = 0.5, col = "red")
@@ -313,15 +313,14 @@ legend("topleft",
        bg="white",
        cex = 1
        )
+
+barplot(round(sort(rowSums(res.CA$col$contrib[,1:2])), digits = 3), col = 'green', las =2,  ylab="contribution [%]",, main = "Contribution des modalités sur le plan factoriel 1-2")
 # barplot(round(sort(rowSums(res.CA$row$cos2[,1:2])), digits = 3), col = 'green', las =2,  ylab="cos2",, main = "Qualités de représentation des individus sur les axes 1 et 2")
 ```
 
 Sur le barplot des Cos2, _hip.gi_ et le poids (_wgt_) sont les mieux représentés dans le premier plan factoriel. Un peu moins de la moitié des variables sont sous la barre des 50%, elles ne sont pas assez représentées que pour être analysées. La quantité d'individu est trop vaste que pour afficher le graphe équivalent, mais la qualité de représentation minimale chez eux est de : 0.013 (individu n°488 : une femme de 1m62 et 70kg).
 
-
-```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
-barplot(round(sort(rowSums(res.CA$col$contrib[,1:2])), digits = 3), col = 'green', las =2,  ylab="contribution [%]",, main = "Contribution des modalités sur le plan factoriel 1-2")
-
+```{r echo = FALSE, warning = FALSE}
 pander(t(round(res.CA$col$contrib[,c(1,2)], digits = 3)))
 ```
 
