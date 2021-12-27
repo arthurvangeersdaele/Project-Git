@@ -215,9 +215,35 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
 En mappant la variable catégoritielle _sex_ sur le graphe des individus, on peut voir qu'il sont distinctement séparés (hormis quelques outliers) sur les axes 1 et 2. L'information du sexe se trouve donc aussi dans d'autre variables, et le fait de n'avoir gardé que 73% de l'information en sélectionnant que les deux premières composantes ne nous a pas fait perdre cette information.
 
 # Clustering 
+Nous avons choisi d'utiliser une k-means clustering plutôt qu'une classification hiérarchique car nous souhaitons avoir deux classes en accord avec le sexe de la personne.
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
+
+
+data=as.data.frame(data.initial)
+sex=data$sex
+data$sex=NULL
+data$age=NULL
+datastd=scale(data)
+model <- kmeans(datastd, centers = 2) #on détermine à l'avance le nombre de clusters (i.e., centers = 2)
+model$cluster #affiche la classe déterminé par le modèle
+
+
+number=length(which(sex == as.vector(model$cluster)-1))
+score=(number/507)*100
+score
+
+
+#Algorithme de Ward
+hclust_ward <- hclust(dist(datastd)^2 / (2 * nrow(datastd)), method = "ward.D") # method = "euclidean" par défaut dans la fonction dist()
+hclust_ward$height
+#Dendrogramme
+#plot(hclust_ward)
+barplot(hclust_ward$height,
+        ylab = "aggregation level", names.arg = (nrow(datastd)-1):1, sub="Nombre de classes")
+plot(hclust_ward)
+
 bmi_values = data.initial$wgt / (data.initial$hgt/100 * data.initial$hgt/100)
 bmi_labels = c("Underweight III", "Underweight II", "Underweight I", "Normal Range", "Overweight", "Obese I", "Obese II", "Obese III")
 bmi_intervals =  c(0, 16.0, 17.0, 18.5, 25, 30, 35, 40, 10000)
