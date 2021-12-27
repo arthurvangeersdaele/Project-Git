@@ -75,7 +75,7 @@ barplot(vars, main="Écart-type des variables", names.arg = names(data.initial),
 
 On remarque que les 9 premières mesures anatomiques n'ont que très peu de dispersion autour de leur moyenne, comparé aux 5 suivantes. De nouveau, celles de l'âge, du poids, du sexe et de la taille ne sont pas encore criticable pour les même raisons déjà évoquées ci-dessus.
 
-## Variable catégoricielle : _sex_ (0 : Féminin, 1 : Masculin)
+## Variable catégorielle : _sex_ (0 : Féminin, 1 : Masculin)
 
 Cette variable est binaire et discrète. Elle servira à la classification plus tard dans le rapport. Le nombre d'hommes et de femmes étudiés est assez équilibré et élevé (247 H - 260 F). 
 
@@ -176,9 +176,9 @@ legend("topleft",
 ```
 
 
-Le cercle des corrélations (et le barplot vert) montre qu'un grand nombre de variables sont plutôt bien représentées car elles sont très proche du cercle, leur qualité de représentation (cos2) est toujours supérieure à 0.5. La seule à être mal représentée est _age_ (cos2 = 0.091), d'ou ses mauvais scores de corrélation avec les autres variables lors du corrplot. Toutes les corrélations sont positives. 
+Le cercle des corrélations (et le barplot vert) montre qu'un grand nombre de variables sont plutôt bien représentées car elles sont très proche du cercle, leur qualité de représentation (cos2) est toujours supérieure à 0.5. La seule à être mal représentée est _bii.di_ (cos2 = 0.48), d'ou ses mauvais scores de corrélation avec les autres variables lors du corrplot. Toutes les corrélations sont positives. 
 
-Lors du corrplot, nous avions remarqué que les scores de corrélation _bii.di_ et _thi.gi_ étaient également mauvais. C'est confirmé ici, car on voit qu'ils sont presque perpendiculaires à la majorité des autres variables, plus proches de l'axe 1. 
+Lors du corrplot, nous avions remarqué que les scores de corrélation _thi.gi_ étaient également mauvais. C'est confirmé ici, car on voit qu'ils sont presque perpendiculaires à la majorité des autres variables, plus proches de l'axe 1. 
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
@@ -215,7 +215,7 @@ En mappant la variable catégoritielle _sex_ sur le graphe des individus, on peu
 
 # Clustering 
 
-Nous avons choisi d'utiliser une k-means clustering plutôt qu'une classification hiérarchique car nous souhaitons avoir deux classes en accord avec le sexe de la personne.	
+Nous avons choisi d'utiliser une k-means clustering plutôt qu'une classification hiérarchique. Après avoir avoir appliqué l'algorithme k-means à nos données quantitatives, nous avons comparé ces résultats avec la variable catégorielle _sex_ de la base de données. En moyenne, le score obtenu après k-means est de 86% de similitude. On peut visualiser la qualité de la classification sur la figure Cluster Analysis. En effet, à droite la variable _sex_ de la base de données initiale est illustrée. Les résultats de la classification sont visibles à gauche. En comparant, on remarque que le résultat de kmeans clustering est globalement bon. On peut en conclure qu'une grande partie de l'information contenue dans la variable _sex_ se retrouve également dans l'ensemble des mesures anatomiques. 
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
@@ -226,10 +226,9 @@ data$sex=NULL
 data$age=NULL	
 datastd=scale(data)	
 model <- kmeans(datastd, centers = 2) #on détermine à l'avance le nombre de clusters (i.e., centers = 2)	
-model$cluster #affiche la classe déterminé par le modèle	
+# model$cluster #affiche la classe déterminé par le modèle	
 number=length(which(sex == as.vector(model$cluster)-1))	
 score=(number/507)*100	
-score	
 #Algorithme de Ward	
 # hclust_ward <- hclust(dist(datastd)^2 / (2 * nrow(datastd)), method = "ward.D") # method = "euclidean" par défaut dans la fonction dist()	
 # hclust_ward$height	
@@ -241,12 +240,17 @@ score
 
 tmp <- cbind((as.vector(model$cluster)-1)*2-1, sex*2-1)
 matrixplot(tmp, col=c("red", "green", "red", "green"), xlab = "class", ylab = "individuals", labels = c("clusters", "sex"), las = 0, main = "Cluster Analysis")
+
+
 ```
 
-```{r}
+Introduisons maintenant la variable _bmi_ qui pourrait permettre une autre classification des données. La formule pour cette variable est :$BMI=\frac{weight}{height(m)^2}$. Cette variable permet de classifier les individus de la base de données en 8 catégories: Underweight III, Underweight II, Underweight I, Normal Range, Overweight, Obese I, Obese II et Obese III. Nous avons ensuite réalisé une classification hiérarchique afin de voir si l'on pouvait obtenir un clustering similaire au BMI, les variables _wgt_ et _hgt_ étant importantes.
+
+
+```{r echo = FALSE, warning = FALSE, out.width="33%"}
 bmi_values = data.initial$wgt / (data.initial$hgt/100 * data.initial$hgt/100)
 bmi_labels = c("Underweight III", "Underweight II", "Underweight I", "Normal Range", "Overweight", "Obese I", "Obese II", "Obese III")
-bmi_intervals =  c(0, 16.0, 17.0, 18.5, 25, 30, 35, 40, 10000)
+bmi_intervals =  c(0, 16.0, 17.0, 18.5, 25, 30, 35, 40, Inf)
 
 BMI = NULL
 for(bmi in bmi_values){
@@ -266,12 +270,38 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
   theme(text = element_text(size = 7.5),
         axis.title = element_text(size = 7.5),
         axis.text = element_text(size = 7.5))
+
+
+#Algorithme de Ward
+hclust_ward <- hclust(dist(datastd)^2 / (2 * nrow(datastd)), method = "ward.D") # method = "euclidean" par défaut dans la fonction dist()
+
+#Dendrogramme
+plot(hclust_ward, xlab = "Individuals")
+n = 6
+tmp <- rect.hclust(hclust_ward, k = n, border = "blue")
+tmp_individuals =  NULL
+tmp_text = NULL
+for (i in 1:n){
+  tmp_individuals <- c(tmp_individuals, tmp[[i]])
+  vec = numeric(length(tmp[[i]])) + i
+  text <- sprintf("class %s", vec)
+  tmp_text <- c(tmp_text, text)
+  
+}
+
+fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
+             col.ind = tmp_text[order(tmp_individuals)], # color by groups
+             palette = c("#00AFBB", "#E7B800", "purple", "red", "blue", "green", "yellow", "brown"),
+             addEllipses = TRUE, # Concentration ellipses
+             legend.title = "Groups"
+             )+
+  theme(text = element_text(size = 7.5),
+        axis.title = element_text(size = 7.5),
+        axis.text = element_text(size = 7.5))
 ```
 
 
-
-
-
+On peut observer la tendance du BMI sur le premier graphe (voir aussi AFC). Le second graphe affiche les clusters déterminés par le Hierachical Clustering. Si on y retrouve la séparation par le genre, la tendance du BMI se retrouve dans les troisclusters attribués à chaque sexe. 
 
 # Analyse des correspondances
 
@@ -330,7 +360,15 @@ Les variables qui contribuent le plus au premier plan factoriel sont les plus im
 
 # Conclusions
 
+Durant la présentation des données, on a pu remarquer dès le début une forte tendance dans les moyennes des mesures anatomiques, qui correspondait déjà au sexe. L'âge a été retiré de nos données, n'ayant aucune corrélation avec les autres variable (fait surprenant d'ailleurs, mais pas tant que ça, vu que sa distribution était plutôt jeune mais déjà adulte). 
 
+Vu que l'information du genre était topologiquement intrinsèque aux données après l'ACP (avec 73% d'information gardée), cela prouve que cette information se trouve dans les variable fortement représentées.
+
+Appliquer l'algorithme kmeans à nos données, nous a permis une nouvelle fois de montrer que les mesures anatomiques contiennent ses informations liées au sexe. En effet, nous avions classifié nos données en 2 classes sans tenir compte du sexe et il s'est avéré que ces 2 classes étaient forts sembables à la variable sex.
+
+Nous avons également créé la nouvelle variable _bmi_ (non-linéairement) à partir des variables _wgt_ et _hgt_. Cette variable permet de classer les individus en 8 catégories (6 effectives). Le Hierarchical Clustering n'a pas semblé s'en rapprocher, à cause de la dépendances des mesures anatomique au genre. Cependant, les clusters ainsi développés semblaient correspondre au BMI, mais de manière genrée (3 type pour les femmes, 3 types pour les hommes).
+
+L'AFC a montré une belle distribution des individus autour des variables quantitatives, tout en discréditant la moitié des variables anatomiques  de part leur mauvaise qualité de représentation. Les variables les plus importantes étant le poids et la taille (d'où notre curiosité pour le BMI). 
 
 
 # Annexes
@@ -367,3 +405,5 @@ Les variables qui contribuent le plus au premier plan factoriel sont les plus im
 * _wgt_ : Un vecteur numérique, le poids du sujet en kilogrammes.
 * _hgt_ : Un vecteur numérique, la taille du sujet en centimètres.
 * _sex_ : Un vecteur catégoriel, 1 si le sujet est un homme, 0 si une femme.
+
+
