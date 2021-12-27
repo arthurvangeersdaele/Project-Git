@@ -1,6 +1,6 @@
 ---
 title: "Projet LSTAT2110(A) -- Analyse de données"
-author: PETIT Romain & VAN GEERSDAELE Arthur, 4827-1700 & 3004-1700, GBIO2M
+author: "PETIT Romain & VAN GEERSDAELE Arthur, 4827-1700 & 3004-1700, GBIO2M"
 output:
   pdf_document:
     number_sections: yes
@@ -8,6 +8,9 @@ output:
     toc_depth: 3
   html_document:
     df_print: paged
+    toc: yes
+    toc_depth: '3'
+  word_document:
     toc: yes
     toc_depth: '3'
 ---
@@ -146,7 +149,7 @@ res <- PCA(data.quantitative, graph = FALSE)
 Si on regarde la quantité d'information respectivement apportée par chaque axe dans le tableau ci-dessous, on peut s'en servir pour choisir les composantes principales les plus pertinentes. 
 
 ```{r echo = FALSE, out.width="33%", fig.align="center"}
-barplot(100*res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]), col = 'red', las =2,  ylab="[%]", main = "Inertie par composante principale")
+barplot(100*res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]), col = 'red', las = 2,  ylab="[%]", main = "Inertie par composante principale")
 ```
 
 La « règle du coude » nous encourage à ne retenir que les 2 premiers axes qui portent environs 73% de l’information.
@@ -176,7 +179,7 @@ legend("topleft",
 
 Le cercle des corrélations (et le barplot vert) montre qu'un grand nombre de variables sont plutôt bien représentées car elles sont très proche du cercle, leur qualité de représentation (cos2) est toujours supérieure à 0.5. La seule à être mal représentée est _age_ (cos2 = 0.091), d'ou ses mauvais scores de corrélation avec les autres variables lors du corrplot. Toutes les corrélations sont positives. 
 
-Lors du corrplot, nous avions remarqué que les scores de corrélation bii.di et thi.gi étaient également mauvais. C'est confirmé ici, car on voit qu'ils sont presque perpendiculaires à la majorité des autres variables, plus proches de l'axe 1. 
+Lors du corrplot, nous avions remarqué que les scores de corrélation _bii.di_ et _thi.gi_ étaient également mauvais. C'est confirmé ici, car on voit qu'ils sont presque perpendiculaires à la majorité des autres variables, plus proches de l'axe 1. 
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
@@ -287,7 +290,7 @@ legend("topleft",
 # barplot(round(sort(rowSums(res.CA$row$cos2[,1:2])), digits = 3), col = 'green', las =2,  ylab="cos2",, main = "Qualités de représentation des individus sur les axes 1 et 2")
 ```
 
-Sur le barplot des Cos2, hip.gi et le poids (_wgt_) sont les mieux représentés dans le premier plan factoriel. Un peu moins de la moitié des variables sont sous la barre des 50%, elles ne sont pas assez représentées que pour être analysées. La quantité d'individu est trop vaste que pour afficher le graphe équivalent, mais la qualité de représentation minimale chez eux est de : 0.013 (individu n°488 : une femme de 1m62 et 70kg).
+Sur le barplot des Cos2, _hip.gi_ et le poids (_wgt_) sont les mieux représentés dans le premier plan factoriel. Un peu moins de la moitié des variables sont sous la barre des 50%, elles ne sont pas assez représentées que pour être analysées. La quantité d'individu est trop vaste que pour afficher le graphe équivalent, mais la qualité de représentation minimale chez eux est de : 0.013 (individu n°488 : une femme de 1m62 et 70kg).
 
 
 ```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
