@@ -240,7 +240,7 @@ score
 # plot(hclust_ward)
 
 tmp <- cbind((as.vector(model$cluster)-1)*2-1, sex*2-1)
-matrixplot(tmp, col=c("red", "green", "red", "green"), xlab = "class", ylab = "individuals", labels = c("klusters", "sex"))
+matrixplot(tmp, col=c("red", "green", "red", "green"), xlab = "class", ylab = "individuals", labels = c("clusters", "sex"), las = 0, main = "Cluster Analysis")
 ```
 
 ```{r}
