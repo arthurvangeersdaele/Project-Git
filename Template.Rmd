@@ -34,13 +34,13 @@ library(VIM)
 ```
 # Introduction
 
-En 2003, Grete Heinz, Louis J. Peterson, Roger W. Johnson, et Carter J. Kerk ont mis en place une étude visant à explorer les relations entre les différentes dimensions du corps humain et d'autre caractéristiques. 
+En 2003, Grete Heinz, Louis J. Peterson, Roger W. Johnson, et Carter J. Kerk ont mis en place une étude visant à explorer les relations entre les différentes dimensions du corps humain et d'autres caractéristiques. 
 
 Pour 507 individus (247 hommes - 260 femmes), 25 mesures/observations, dont les noms et unités sont détaillés en annexe, ont été faites.
 
 Un exemple de problématique très pertinente serait qu'un cadavre en mauvais état soit retrouvé et qu'une enquête soit ouverte. Dans un tel cas de figure, hormis les informations génétiques, les premières caractéristiques intéressantes sont l' _âge_, le _poid_, la _taille_ et le _sexe_ de l'individu retrouvé.
 
-Ce rapport va analyser ces données en utlisant les méthodes vues au cours afin de voir, si oui ou non, l'idée d'utiliser certaines valeurs de variables pour en déduire d'autres est pertinente.  
+Ce rapport va analyser ces données en utilisant les méthodes vues au cours afin de voir, si oui ou non, l'idée d'utiliser certaines valeurs de variables pour en déduire d'autres est pertinente.  
 
 L'objectif de cette étude était précisément d'offrir aux étudiants des données solides et pertinentes pour les analyser.
 
@@ -63,21 +63,21 @@ means = rowMeans(data.initial)
 barplot(means, main="Moyennes des mesures de diamètre/circonférence", names.arg = seq(from=1, to= 507, by=1), col="black",  las = 2)
 ```
 
-On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Le genre (_sex_) étant une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un, alors que pour les autres variables, qui sont des mesures naturelles, ca n'est pas le cas. On peut noter que la moyenne est sous 0.5, du fait qu'il y'a plus de femmes que d'hommes. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupes de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
+On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Vu que le genre (_sex_) est une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un. Alors que pour les autres variables, qui sont des mesures naturelles, ce n'est pas le cas. On peut noter que la moyenne est en dessous de 0.5, du fait qu'il y ait plus de femmes que d'hommes. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupes de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
 
 
-Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela ne nous apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont corrélées à la variable catégorielle du genre.
+Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela n'apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont corrélées à la variable catégorielle du genre.
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 vars = colStdevs(data.initial)
 barplot(vars, main="Écart-type des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
 ```
 
-On remarque que les 9 premières mesures anatomiques n'ont que très peu de dispersion autour de leur moyenne, comparé aux 5 suivantes. De nouveau, celles de l'âge, du poids, du sexe et de la taille ne sont pas encore criticable pour les même raisons déjà évoquées ci-dessus.
+On remarque que les 9 premières mesures anatomiques n'ont que très peu de dispersion autour de leur moyenne, comparé aux 5 suivantes. De nouveau, celles de l'âge, du poids, du sexe et de la taille ne sont pas encore criticables pour les même raisons déjà évoquées ci-dessus.
 
 ## Variable catégorielle : _sex_ (0 : Féminin, 1 : Masculin)
 
-Cette variable est binaire et discrète. Elle servira à la classification plus tard dans le rapport. Le nombre d'hommes et de femmes étudiés est assez équilibré et élevé (247 H - 260 F). 
+Cette variable est binaire et discrète. Elle servira à la classification plus tard dans le rapport. Le nombre d'hommes et de femmes étudié est assez équilibré et élevé (247 H - 260 F). 
 
 
 ## Distribution des variables de nature différentes (âge, taille et poids)
@@ -113,7 +113,7 @@ Ici, nous nous intéressons aux variables autres que les mesures anatomiques.
 
 On voit sur le premier graphe que la population est assez jeune (30 ans en moyenne) et que seulement 25% des individus ont plus de 36 ans, tandis que 50% des individus ont moins de 27 ans.
 
-Le second graphe présente presque les mêmes types de quantile et médiane/moyenne que pourrait le faire une Gaussienne. En effet, la moyenne et la médiane sont presque identiques, et les 1er et 2eme quantiles sont équidistants de la moyenne. On note qu'il y'a très peu de personnes au-dessus de 96 kg, dont un sortant vraiment du lot (116 kg).
+Le second graphe présente presque les mêmes types de quantile et médiane/moyenne caractéristiques d'une Gaussienne. En effet, la moyenne et la médiane sont presque identiques, et les 1er et 2ème quantiles sont équidistants de la moyenne. On note qu'il y a très peu de personnes au-dessus de 96 kg, mais quand même un individu sortant vraiment du lot avec ses 116 kg.
 
 La distribution de la taille ressemble encore plus à une Gaussienne que celle du poids, avec une moyenne à 1m70 et un écart-type de 9.41 cm, tout genre confondu.
 
@@ -128,7 +128,7 @@ data.normalized <- as.data.frame(lapply(data.quantitative, normalize))
 cp <- corrplot(cor(data.normalized), method = "square")
 ```
 
-Ce plot des corrélation nous indique malheureusement déjà que nous ne pourrons pas utiliser les mesures anatomiques pour déterminer _age_ (de manière linéaire, car on étudie la corrélation). Étant donné qu'en plus de ça, la distribution de l'âge n'est pas très représentative de la population, nous allons donc l'enlever de la base de données. Si on voulait s'acharner, on pourrait vérifier l'information mutuelle entre la variable âge et toute les autres, afin de détecter une potentielle relation non-linéaire. 
+Ce plot des corrélations nous indique malheureusement déjà que nous ne pourrons pas utiliser les mesures anatomiques pour déterminer _age_ (de manière linéaire, car on étudie la corrélation). Étant donné qu'en plus de ça, la distribution de l'âge n'est pas très représentative de la population, nous allons donc l'enlever de la base de données. Si on voulait s'acharner, on pourrait vérifier l'information mutuelle entre la variable âge et toute les autres, afin de détecter une potentielle relation non-linéaire. 
 
 Remarque supplémentaire : Au vu de ce plot, les variables : _bii.di_, _thi.gi_ seront peu intéressantes.
 
@@ -146,7 +146,7 @@ data.quantitative$age = NULL
 ```{r echo=FALSE, warning = FALSE}
 res <- PCA(data.quantitative, graph = FALSE)
 ```
-Si on regarde la quantité d'information respectivement apportée par chaque axe dans le tableau ci-dessous, on peut s'en servir pour choisir les composantes principales les plus pertinentes. 
+Si on regarde la quantité d'informations respectivement apportée par chaque axe dans le tableau ci-dessous, on peut s'en servir pour choisir les composantes principales les plus pertinentes. 
 
 ```{r echo = FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 barplot(100*res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]), col = 'red', las = 2,  ylab="[%]", main = "Inertie par composante principale")
@@ -154,7 +154,7 @@ barplot(100*res$eig[,"eigenvalue"]/sum(res$eig[,"eigenvalue"]), col = 'red', las
 
 La « règle du coude » nous encourage à ne retenir que les 2 premiers axes qui portent environs 73% de l’information.
     
-La règle de Kaiser nous inciterait à retenir deux axes supplémentaires (pour un gain de 10% d’informations), mais un travail beaucoup plus conséquent.
+La règle de Kaiser nous inciterait à retenir deux axes supplémentaires (pour un gain de 10% d’informations), mais cela impliquerait un travail beaucoup plus conséquent.
 
 Nous allons donc retenir les deux premières uniquement. 
 
@@ -176,7 +176,7 @@ legend("topleft",
 ```
 
 
-Le cercle des corrélations (et le barplot vert) montre qu'un grand nombre de variables sont plutôt bien représentées car elles sont très proche du cercle, leur qualité de représentation (cos2) est toujours supérieure à 0.5. La seule à être mal représentée est _bii.di_ (cos2 = 0.48), d'ou ses mauvais scores de corrélation avec les autres variables lors du corrplot. Toutes les corrélations sont positives. 
+Le cercle des corrélations (et le barplot vert) montrent qu'un grand nombre de variables sont plutôt bien représentées car elles sont très proches du cercle, leur qualité de représentation (cos2) est toujours supérieure à 0.5. La seule à être mal représentée est _bii.di_ (cos2 = 0.48), d'où ses mauvais scores de corrélation avec les autres variables lors du corrplot. Toutes les corrélations sont positives. 
 
 Lors du corrplot, nous avions remarqué que les scores de corrélation _thi.gi_ étaient également mauvais. C'est confirmé ici, car on voit qu'ils sont presque perpendiculaires à la majorité des autres variables, plus proches de l'axe 1. 
 
@@ -211,7 +211,7 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
 
 ```
 
-En mappant la variable catégoritielle _sex_ sur le graphe des individus, on peut voir qu'il sont distinctement séparés (hormis quelques outliers) sur les axes 1 et 2. L'information du sexe se trouve donc aussi dans d'autre variables, et le fait de n'avoir gardé que 73% de l'information en sélectionnant que les deux premières composantes ne nous a pas fait perdre cette information.
+En mappant la variable catégoritielle _sex_ sur le graphe des individus, on peut voir qu'ils sont distinctement séparés (hormis quelques outliers) sur les axes 1 et 2. L'information du sexe se trouve donc aussi dans d'autres variables, et le fait de n'avoir gardé que 73% de l'information en sélectionnant que les deux premières composantes ne nous a pas fait perdre cette information.
 
 # Clustering 
 
@@ -303,11 +303,11 @@ fviz_pca_ind (res, geom.ind = "point", # show points only (nbut not "text")
 ```
 
 
-On peut observer la tendance du BMI sur le premier graphe (voir aussi AFC). Le second graphe affiche les clusters déterminés par le Hierachical Clustering. Si on y retrouve la séparation par le genre, la tendance du BMI se retrouve dans les troisclusters attribués à chaque sexe. 
+On peut observer la tendance du BMI sur le premier graphe (voir aussi AFC). Le second graphe affiche les clusters déterminés par le Hierachical Clustering. Si on y retrouve la séparation par le genre, la tendance du BMI se retrouve dans les trois clusters attribués à chaque sexe. 
 
 # Analyse des correspondances
 
-Comme vu en TP, grâce aux relations quasi-barycentriques, nous pouvons représenter sur le même graphique à la fois les coordonnées factorielles des lignes et des colonnes et leur proximité/éloignement a donc une interprétation intrinsèque en termes de liens. Afin de faciliter cette interprétation, on représente généralement les coordonnées de l’ACFS sur le premier plan factoriel. Le graphe de la quantité d'information relative à chaque axe principal ci-dessous nous indique que c'est acceptable, même si prendre également le 3e axe est tentant.
+Comme vu en TP, grâce aux relations quasi-barycentriques, nous pouvons représenter sur le même graphique les coordonnées factorielles des lignes et des colonnes et leur proximité/éloignement a donc une interprétation intrinsèque en termes de liens. Afin de faciliter cette interprétation, on représente généralement les coordonnées de l’ACFS sur le premier plan factoriel. Le graphe de la quantité d'information relative à chaque axe principal ci-dessous nous indique que c'est acceptable, même si prendre également le 3e axe est tentant.
 
 ```{r echo=FALSE, warning = FALSE, out.width="50%", fig.align="center"}
 res.CA <- CA(data.quantitative, graph =  FALSE)
@@ -315,7 +315,7 @@ barplot(res.CA$eig[,3], col = 'red', las =2,  ylab="[%]", main = "Quantité d'in
 
 ``` 
 
-Si maintenant, on affiche le graphe des individus et des variables, on ne sait pas interprêter grand chose, car les individus sont trop nombreux, hormis que le mappage du genre est logiquement conservé avec l'AFC.
+Si on affiche le graphe des individus et des variables, il est difficile de tirer des conclusions car les individus sont trop nombreux. Cependant, on remarque que le mappage du genre est logiquement conservé avec l'AFC.
 
 
 Néanmoins, si on mappe la valeur du BMI de chaque individu sur chacun des points du graphe des individus, on peut voir une tendance très nette (S-E vers N-O). Cette tendance se justifie par la position des variables _wgt_ et _hgt_ dans le graphe des variables, malgré que la formule du BMI ne soit pas linéaire. La taille (_hgt_) a une influence négative sur le BMI, alors que le poids (_wgt_) a une influence positive. 
@@ -350,25 +350,25 @@ barplot(round(sort(rowSums(res.CA$col$contrib[,1:2])), digits = 3), col = 'green
 # barplot(round(sort(rowSums(res.CA$row$cos2[,1:2])), digits = 3), col = 'green', las =2,  ylab="cos2",, main = "Qualités de représentation des individus sur les axes 1 et 2")
 ```
 
-Sur le barplot des Cos2, _hip.gi_ et le poids (_wgt_) sont les mieux représentés dans le premier plan factoriel. Un peu moins de la moitié des variables sont sous la barre des 50%, elles ne sont pas assez représentées que pour être analysées. La quantité d'individu est trop vaste que pour afficher le graphe équivalent, mais la qualité de représentation minimale chez eux est de : 0.013 (individu n°488 : une femme de 1m62 et 70kg).
+Sur le barplot des Cos2, _hip.gi_ et le poids (_wgt_) sont les mieux représentés dans le premier plan factoriel. Un peu moins de la moitié des variables sont sous la barre des 50%, elles ne sont pas assez représentées que pour être analysées. La quantité d'individus est trop vaste que pour afficher le graphe équivalent, mais la qualité de représentation minimale chez eux est de : 0.013 (individu n°488 : une femme de 1m62 et 70kg).
 
 ```{r echo = FALSE, warning = FALSE}
 pander(t(round(res.CA$col$contrib[,c(1,2)], digits = 3)))
 ```
 
 
-Les variables qui contribuent le plus au premier plan factoriel sont les plus importantes pour expliquer la variabilité du set de données. Les variables qui ne contribuent pas beaucoup à une dimension ou qui contribuent aux dernières dimensions sont moins importantes. Sur le premier axe, la différenciation des individus se fait surtout par le poids _wgt_, la taille _hgt_ et _wai.gi_, tandis que sur le deuxième axe, elle se fais principalement par la variable _nav.gi_. 
+Les variables qui contribuent le plus au premier plan factoriel sont les plus importantes pour expliquer la variabilité du set de données. Les variables qui ne contribuent pas beaucoup à une dimension ou qui contribuent aux dernières dimensions sont moins importantes. Sur le premier axe, la différenciation des individus se fait surtout par le poids _wgt_, la taille _hgt_ et _wai.gi_, tandis que sur le deuxième axe, elle se fait principalement par la variable _nav.gi_. 
 
 
 # Conclusions
 
-Durant la présentation des données, on a pu remarquer dès le début une forte tendance dans les moyennes des mesures anatomiques, qui correspondait déjà au sexe. L'âge a été retiré de nos données, n'ayant aucune corrélation avec les autres variable (fait surprenant d'ailleurs, mais pas tant que ça, vu que sa distribution était plutôt jeune mais déjà adulte). 
+Durant la présentation des données, on a pu remarquer dès le début une forte tendance dans les moyennes des mesures anatomiques, qui correspondait déjà au sexe. L'âge a été retiré de nos données, n'ayant aucune corrélation avec les autres variables (fait surprenant d'ailleurs, mais pas tant que ça, vu que sa distribution était peu étendue). 
 
-Vu que l'information du genre était topologiquement intrinsèque aux données après l'ACP (avec 73% d'information gardée), cela prouve que cette information se trouve dans les variable fortement représentées.
+Vu que l'information du genre était topologiquement intrinsèque aux données après l'ACP (avec 73% d'information gardée), cela prouve que cette information se trouve dans les variables fortement représentées.
 
-Appliquer l'algorithme kmeans à nos données, nous a permis une nouvelle fois de montrer que les mesures anatomiques contiennent ses informations liées au sexe. En effet, nous avions classifié nos données en 2 classes sans tenir compte du sexe et il s'est avéré que ces 2 classes étaient forts sembables à la variable sex.
+Appliquer l'algorithme kmeans à nos données, nous a permis une nouvelle fois de montrer que les mesures anatomiques contiennent des informations liées au sexe. En effet, nous avions classifié nos données en 2 classes sans tenir compte du sexe et il s'est avéré que ces 2 classes étaient forts sembables à la variable sex.
 
-Nous avons également créé la nouvelle variable _bmi_ (non-linéairement) à partir des variables _wgt_ et _hgt_. Cette variable permet de classer les individus en 8 catégories (6 effectives). Le Hierarchical Clustering n'a pas semblé s'en rapprocher, à cause de la dépendances des mesures anatomique au genre. Cependant, les clusters ainsi développés semblaient correspondre au BMI, mais de manière genrée (3 type pour les femmes, 3 types pour les hommes).
+Nous avons également créé la nouvelle variable _bmi_ (non-linéairement) à partir des variables _wgt_ et _hgt_. Cette variable permet de classer les individus en 8 catégories (6 effectives). Le Hierarchical Clustering n'a pas semblé s'en rapprocher, à cause de la dépendances des mesures anatomique au genre. Cependant, les clusters ainsi développés semblaient correspondre au BMI, mais de manière genrée (3 types pour les femmes, 3 types pour les hommes).
 
 L'AFC a montré une belle distribution des individus autour des variables quantitatives, tout en discréditant la moitié des variables anatomiques  de part leur mauvaise qualité de représentation. Les variables les plus importantes étant le poids et la taille (d'où notre curiosité pour le BMI). 
 
