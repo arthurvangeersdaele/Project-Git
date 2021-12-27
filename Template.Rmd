@@ -57,7 +57,7 @@ means = colMeans(data.initial)
 barplot(means, main="Moyennes des variables", names.arg = names(data.initial), col=rainbow(20),  las = 2)
 ```
 
-On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Le genre (_sex_) étant une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un, alors que pour les autres variables, qui sont des mesures naturelles, ca n'est pas le cas. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupe de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
+On voit sur ce barplot que les moyennes ne sont pas toutes comparables. Le genre (_sex_) étant une variable binaire (et donc aussi discrète), sa moyenne sera toujours bornée entre zéro et un, alors que pour les autres variables, qui sont des mesures naturelles, ca n'est pas le cas. On peut noter que la moyenne est sous 0.5, du fait qu'il y'a plus de femmes que d'hommes. De plus, les unités de mesure de distance (cm) et de poids (kg) ne sont pas non plus directement comparables. Néanmoins, on remarque déjà de fortes similarités de moyennes entre certains groupes de zones anatomiques (ex: les 9 premières, les 5 suivantes et 7 prochaines).
 
 
 ```{r echo = FALSE, warning = FALSE, out.width="33%", fig.align="center"}
@@ -66,7 +66,7 @@ means = rowMeans(data.initial)
 bp <- barplot(means, main="Moyennes des mesures de diamètre/circonférence", names.arg = seq(from=1, to= 507, by=1), col="black",  las = 2)
 ```
 
-Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela ne nous apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont correlées à la variable catégoricielle du genre.
+Ici, on peut observer la moyennes des mesures de diamètre et des mesures de circonférence de chaque individu. Cela ne nous apporte pas grand chose à première vue, mais il suffit déjà de prendre l'information du sexe pour remarquer une différence : les 247 premières moyennes sont des hommes, et les 260 dernières sont des femmes. On peut donc déjà supposer qu'une ou plusieurs de ces mesures sont corrélées à la variable catégorielle du genre.
 
 ```{r echo=FALSE, warning = FALSE, out.width="33%", fig.align="center"}
 vars = colStdevs(data.initial)
